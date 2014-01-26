@@ -1,0 +1,65 @@
+{
+  "provisioners": [
+    {
+      "type": "shell",
+      "execute_command": "echo 'vagrant'|sudo -S sh '{{.Path}}'",
+      "override": {
+        "virtualbox-iso": {
+          "scripts": [
+	    "scripts/boot.sh",
+	    "scripts/time.sh",
+	    "scripts/ports.sh",
+	    "scripts/vagrant.sh",
+	    "scripts/virtualbox.sh",
+	    "scripts/cleanup.sh"
+	  ]
+        }
+      }
+    }
+  ],
+  "post-processors": [
+    {
+      "type": "vagrant",
+      "override": {
+        "virtualbox": {
+          "output": "freebsd-10.0-amd64-virtualbox.box"
+        }
+      }
+    }
+  ],
+  "builders": [
+    {
+      "type": "virtualbox-iso",
+      "boot_command": [
+	"<enter>",
+        "<wait10><wait5>",
+        "s",
+        "mkdir -p /tmp/bsdinstall_etc<enter>",
+        "dhclient em0<enter>",
+        "<wait5>",
+        "fetch -o /tmp/installer http://{{ .HTTPIP }}:{{ .HTTPPort }}/installer.sh<enter>",
+        "<wait>",
+        "bsdinstall script /tmp/installer<enter>",
+        "<wait10><wait10><wait10><wait10><wait10><wait10>",
+        "shutdown -r now<enter>"
+      ],
+      "boot_wait": "10s",
+      "disk_size": 10000,
+      "guest_os_type": "FreeBSD_64",
+      "http_directory": "http",
+      "iso_checksum": "fd25619fa0d69c29bea8347b1070ac75",
+      "iso_checksum_type": "md5",
+      "iso_url": "http://ftp.freebsd.org/pub/FreeBSD/ISO-IMAGES-amd64/10.0/FreeBSD-10.0-RELEASE-amd64-disc1.iso",
+      "ssh_username": "vagrant",
+      "ssh_password": "vagrant",
+      "ssh_port": 22,
+      "ssh_wait_timeout": "10000s",
+      "shutdown_command": "sudo halt -p",
+      "virtualbox_version_file": ".vbox_version",
+      "vboxmanage": [
+        [ "modifyvm", "{{.Name}}", "--memory", "512" ],
+        [ "modifyvm", "{{.Name}}", "--cpus", "1" ]
+      ]
+    }
+  ]
+}
